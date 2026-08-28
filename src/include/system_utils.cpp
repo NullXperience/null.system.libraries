@@ -114,7 +114,7 @@ int searchBlockListedStrings(std::string filename, std::string search_str)
     std::fstream haystack(filename, std::ios::in);
     while(std::getline(haystack, line))
     {
-        if(std::strncmp(line.c_str(), search_str.c_str(), line.length() - 2) == 0)
+        if(containsWithLength(line, search_str.c_str(), search_str.length() - 1))
         {
             haystack.close();
             // got em1
@@ -123,6 +123,30 @@ int searchBlockListedStrings(std::string filename, std::string search_str)
     }
     haystack.close();
     return 1;
+}
+
+/* This function is a wrapper for .contains.
+  *
+  * function: checkBlocklistedStringsNChar
+  * param: filename -> the file
+  *
+*/
+bool containsWithLength(std::string_view str, const char* sub_ptr, size_t sub_len) 
+{
+    return str.contains(std::string_view(sub_ptr, sub_len));
+}
+
+/* This function parses a string into a boolean value.
+ *
+ * function: parseBool
+ * param: value -> the string value to parse
+ *
+ * returns: true if the value is "true" or "1", otherwise false
+ *
+*/
+bool parseBool(const std::string& value)
+{
+    return value == "1" || value == "true";
 }
 
 /* This function is used to check if a script contains strings that ressemble a crititcal partition.

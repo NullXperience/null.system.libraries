@@ -24,6 +24,7 @@
 #include <fstream>
 #include <cstring>
 #include <cstdarg>
+#include <string>
 
 // log levels:
 enum elogLevel {
@@ -46,6 +47,8 @@ extern bool useStdoutForAllLogs;
 int executeCommands(const std::vector<std::string>& commandAndArgs, bool __requiresOutput);
 int executeScripts(const std::vector<std::string>& scriptPathAndArgs, bool __requiresOutput);
 int searchBlockListedStrings(std::string filename, std::string search_str);
+bool containsWithLength(std::string_view str, const char* sub_ptr, size_t sub_len);
+bool parseBool(const std::string& value);
 bool checkBlocklistedStringsNChar(std::string filename);
 bool eraseFile(std::string filename);
 std::string getpropFromFile(const std::string& variableName, const std::string& filename);
