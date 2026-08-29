@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <system_utils.h>
+#include <system_utils.hpp>
 
 /* This function is used to execute shell commands.
   *
@@ -188,9 +188,9 @@ bool checkBlocklistedStringsNChar(std::string filename)
         "/dev/block/mmcblk",
         "/dev/mmcblk"
     };
-    for(int i = 0; i < blocklistedStrings.size() - 1; i++)
+    for(std::size_t i = 0; i < blocklistedStrings.size() - 1; i++)
     {
-        // found the str:
+        // console
         if(searchBlockListedStrings(filename, blocklistedStrings[i]) == 0) return true;
     }
     return false;

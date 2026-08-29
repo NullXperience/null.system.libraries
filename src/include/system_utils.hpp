@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef SYSTEM_UTILS_H
-#define SYSTEM_UTILS_H
+#ifndef SYSTEM_UTILS_HPP
+#define SYSTEM_UTILS_HPP
 #include <iostream>
 #include <vector>
 #include <unistd.h>

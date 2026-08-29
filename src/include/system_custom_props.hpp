@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef SYSTEM_CUSTOM_PROPS_H
-#define SYSTEM_CUSTOM_PROPS_H
-#include <system_utils.h>
+#ifndef SYSTEM_CUSTOM_PROPS_HPP
+#define SYSTEM_CUSTOM_PROPS_HPP
+#include <system_utils.hpp>
 #include <filesystem>
+#include <variant>
 
 // variables to use to cache the properties.
-extern int properties_count;
+extern std::size_t propertiesCount;
 extern bool didAnyPropertyGetChanged;
 extern bool isEverythingCached;
 extern std::vector<std::string> properties_cached;
@@ -41,21 +42,16 @@ enum propertyCastType {
 // struct that is used for property stuffs like
 // returning it's value or finding the index and type
 typedef struct {
-    int propertyIndex;
+    std::size_t propertyIndex;
     bool found;
     std::string propertyName;
-    union {
-        int propertyIntegerValue;
-        float propertyFloatValue;
-        bool propertyBoolValue;
-        std::string propertyStringValue;
-    } value; 
+    std::variant<int, float, bool, std::string> propertyValue;
     enum propertyCastType typeProp;
 } romCustProperty;
 
 // functions:
 bool props_null_setProperty(std::string propertyName, std::string propertyValue);
-void props_null_readProperty(void *_Nonnull propInfo);
+void props_null_readProperty(void *propInfo);
 void props_null_cacheProperties();
 void props_null_saveState();
 void props_null_deleteProperty(std::string propertyName);

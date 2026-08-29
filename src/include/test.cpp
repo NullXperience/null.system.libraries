@@ -14,13 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <system_utils.h>
-#include <system_custom_props.h>
-std::string coreLogFile = "core";
-bool useStdoutForAllLogs = true;
-int properties_count = 0;
+#include <system_utils.hpp>
+#include <system_custom_props.hpp>
+#include <system_null.hpp>
+std::size_t propertiesCount = 0;
+bool useStdoutForAllLogs = false;
 bool didAnyPropertyGetChanged = false;
 bool isEverythingCached = false;
+std::string coreLogFile = "/data/local/tmp/core";
 std::vector<std::string> properties_cached;
 std::vector<std::string> propertiesValue_cached;
-int main(void){}
+const std::string batteryPercentageBlob = "/sys/devices/platform/charger/power_supply/battery/capacity";
+const std::string resetprop = "/system/bin/setprop";
+int main(void){
+    std::cout << system_null_isPackageInstalled(NULL_FRAMEWORK_PACKAGE_NAME) << std::endl;
+    std::cout << system_null_getBatteryPercentage() << std::endl;
+    std::cout << "start of void" << std::endl;
+    std::string messageString = "Hello neighbour!";
+    system_null_notifyUser(NOTIFY_NOTIFICATION, messageString);
+    system_null_notifyUser(NOTIFY_TOAST, messageString);
+}

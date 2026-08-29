@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <system_custom_props.h>
+#include <system_custom_props.hpp>
 
-/* This function changes the value of a given property and sets __didAnyPropertyGetChanged to true.
-   If __didAnyPropertyGetChanged is set to true, the values that are changed will be reflected onto the 
+/* This function changes the value of a given property and sets didAnyPropertyGetChanged to true.
+   If didAnyPropertyGetChanged is set to true, the values that are changed will be reflected onto the 
    file, the property file when __deinit__properties is called.
   *
-  * function: __setProperty
-  * param: __propertyName -> name of the property | __propertyValue -> the value of the given property.
+  * function: props_null_setProperty
+  * param: propertyName -> name of the property | propertyValue -> the value of the given property.
   *
 */
 bool props_null_setProperty(std::string propertyName, std::string propertyValue)
@@ -29,7 +29,7 @@ bool props_null_setProperty(std::string propertyName, std::string propertyValue)
     // the real reason i didn't put any error on the
     // same value because it's pointless, if you add one
     // it's just going to be some junk.
-    romCustProperty setProp = __initializeThisStruct();
+    romCustProperty setProp;
     setProp.propertyName = propertyName;
     props_null_readProperty(&setProp);
     if(setProp.found)
@@ -40,20 +40,27 @@ bool props_null_setProperty(std::string propertyName, std::string propertyValue)
     return false;
 }
 
-void props_null_readProperty(void *_Nonnull propInfo)
+/* This function takes a struct as a void *ptr which contains the property name and then we get values and 
+   stuff from the pre-cached array for a proper typecast. We save the property value to the appropriate datatype.
+  *
+  * function: props_null_readProperty
+  * param: propInfo -> a romCustProperty that is casted as a void pointer.
+  *
+*/
+void props_null_readProperty(void *propInfo)
 {
-    romCustProperty* prop_info = (romCustProperty*)propInfo;
+    romCustProperty* prop_info = static_cast<romCustProperty*>(propInfo);
     if(!prop_info) return;
     prop_info->found = false;
     // we put this shit in a loop to find the correct index lol
-    for(int i = 0; i < propertiesCount; i++)
+    for(std::size_t i = 0; i < propertiesCount; i++)
     {
-        if(std::strcmp(propertiesValue_cached[i], "DELETED") == 0)
+        if(propertiesValue_cached[i].contains("DELETED"))
         {
             // console
             return;
         }
-        if(properties_cached[i])
+        if(!properties_cached[i].empty())
         {
             if(prop_info->propertyName.contains("float")) prop_info->typeProp = CAST_TYPE_FLOAT;
             else if(prop_info->propertyName.contains("int")) prop_info->typeProp = CAST_TYPE_INT;
@@ -62,16 +69,18 @@ void props_null_readProperty(void *_Nonnull propInfo)
             switch(prop_info->typeProp)
             {
                 case CAST_TYPE_INT: 
-                    prop_info->value.propertyIntegerValue = std::stoi(propertiesValue_cached[i]);
+                    prop_info->propertyValue = std::stoi(propertiesValue_cached[i]);
                 break;
                 case CAST_TYPE_FLOAT: 
-                    prop_info->value.propertyIntegerValue = std::stof(propertiesValue_cached[i]);
+                    prop_info->propertyValue = std::stof(propertiesValue_cached[i]);
                 break;
                 case CAST_TYPE_BOOL:
-                    prop_info->value.propertyBoolValue = parseBool(propertiesValue_cached[i]);
+                    prop_info->propertyValue = parseBool(propertiesValue_cached[i]);
                 break;
                 case CAST_TYPE_STRING:
-                    prop_info->value.propertyStringValue = propertiesValue_cached[i];
+                    prop_info->propertyValue = propertiesValue_cached[i];
+                break;
+                case CAST_NONE:
                 break;
             }
         }
@@ -92,7 +101,7 @@ void props_null_readProperty(void *_Nonnull propInfo)
 */
 void props_null_cacheProperties()
 {
-    is(!isEverythingCached) return;
+    if(!isEverythingCached) return;
     // check if we can open the file and exit if we can't:
     std::fstream propFile(PROPERTY_FILE, std::ios::in);
     if(!propFile.is_open())
@@ -109,8 +118,8 @@ void props_null_cacheProperties()
         const std::size_t position = cachedProp.find('=');
         // skip if the value itself is empty:
         if(position == std::string::npos) continue;
-        properties_cached[i] = cachedProp.substr(0, position);
-        propertiesValue_cached[i] = cachedProp.substr(position + 1);
+        properties_cached[propertiesCount] = cachedProp.substr(0, position);
+        propertiesValue_cached[propertiesCount] = cachedProp.substr(position + 1);
         propertiesCount++;
     }
 }
@@ -127,9 +136,9 @@ void props_null_saveState()
     // open the file in write mode to erase the previous content.
     std::fstream thisProp(PROPERTY_FILE, std::ios::in | std::ios::out);
     // now let's write the new content into the file:
-    for(int i = 0; i < propertiesCount; i++)
+    for(std::size_t i = 0; i < propertiesCount; i++)
     {
-        if(properties_cached.contains("DELETED")) continue;
+        if(propertiesValue_cached[i].contains("DELETED")) continue;
         thisProp << properties_cached[i] << "=" << propertiesValue_cached[i] << '\n';
     }
     thisProp.close();
@@ -181,18 +190,4 @@ void props_deinit_properties(bool saveTheProps)
 {
     // console
     if(saveTheProps) props_null_saveState();
-}
-
-/* This function initializes a struct for later purposes.
-  *
-  * function: __initializeThisStruct
-  *
-*/
-romCustProperty initializeThisStruct()
-{
-    romCustProperty init;
-    init.propertyIndex = -1;
-    init.found = false;
-    init.typeProp = CAST_NONE;
-    return init;
 }
