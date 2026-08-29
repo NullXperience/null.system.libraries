@@ -9,7 +9,7 @@ else
 fi;
 HEADER="./src/include/"
 CCROOT="$HOME/Android/Sdk/ndk/30.0.16138531/toolchains/llvm/prebuilt/linux-x86_64/bin"
-CXXFLAGS="-O2 -g -Wall -Wextra -Werror \
+CXXFLAGS="-static-libstdc++ --std=c++23 -O2 -Wall -Wextra -Werror \
     -Wshadow -Wconversion -Wsign-conversion \
     -Wpointer-arith -Wcast-qual \
     -Wformat=2 -Wundef \
@@ -24,9 +24,9 @@ CXXFLAGS="-O2 -g -Wall -Wextra -Werror \
     -fPIE \
     -fstack-protector-strong \
     -fno-omit-frame-pointer \
-    -Wno-deprecated-declarations"
-echo $ADB $SDK $COMPILER
-${CCROOT}/${COMPILER} $CXXFLAGS -I$HEADER ${HEADER}/system_utils.cpp ${HEADER}/system_custom_props.cpp ${HEADER}/system_null.cpp ${HEADER}/test.cpp --std=c++23 -static-libstdc++ &>log;
+    -Wno-deprecated-declarations \
+    -s"
+${CCROOT}/${COMPILER} $CXXFLAGS -I$HEADER ${HEADER}/system_utils.cpp ${HEADER}/system_custom_props.cpp ${HEADER}/system_null.cpp ${HEADER}/test.cpp &>log;
 $ADB shell rm -rf /data/local/tmp/a.out
 $ADB push a.out /data/local/tmp
 rm -rf a.out

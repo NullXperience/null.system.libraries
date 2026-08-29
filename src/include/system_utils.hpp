@@ -35,6 +35,12 @@ enum elogLevel {
     LOG_LEVEL_ABORT
 };
 
+// fork shits
+enum forkStatus {
+    FORK_FAILED = -1,
+    FORK_SUCCESS = 0
+};
+
 // extern vars. VERY IMPORTANT!!
 extern std::string coreLogFile;
 extern bool useStdoutForAllLogs;
@@ -52,4 +58,8 @@ bool parseBool(const std::string& value);
 bool checkBlocklistedStringsNChar(std::string filename);
 bool eraseFile(std::string filename);
 std::string getpropFromFile(const std::string& variableName, const std::string& filename);
+std::string logType(elogLevel type);
+template <typename... Args>
+void consoleLog(elogLevel type, const std::string& service, const std::string& message, Args&&... extras);
+void consoleLog(elogLevel type, const std::string& service, const std::string& message);
 #endif

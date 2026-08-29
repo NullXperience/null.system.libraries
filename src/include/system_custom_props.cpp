@@ -57,7 +57,7 @@ void props_null_readProperty(void *propInfo)
     {
         if(propertiesValue_cached[i].contains("DELETED"))
         {
-            // console
+            consoleLog(LOG_LEVEL_ERROR, "props_null_readProperty", "Property is yet to be deleted after a sync, skipping fetching metadata for {}", properties_cached[i]);
             return;
         }
         if(!properties_cached[i].empty())
@@ -86,7 +86,7 @@ void props_null_readProperty(void *propInfo)
         }
         else
         {
-            // console
+            consoleLog(LOG_LEVEL_ERROR, "props_null_readProperty", "Failed to fetch property value.");
             return;
         }
         // increment the property index until we find the one, this index helps us to fetch it faster.
@@ -106,8 +106,7 @@ void props_null_cacheProperties()
     std::fstream propFile(PROPERTY_FILE, std::ios::in);
     if(!propFile.is_open())
     {
-        // console
-        // abort
+        consoleLog(LOG_LEVEL_ERROR, "props_null_cacheProperties", "Failed to open up property file.");
         exit(EXIT_FAILURE);
     }
     propertiesCount = 0;
@@ -169,8 +168,7 @@ void props_init_properties()
 {
     if(!std::filesystem::exists(PROPERTY_FILE))
     {
-        // console 
-        // abort
+        consoleLog(LOG_LEVEL_ERROR, "props_init_properties", "Failed to initialize property stuff.");
         exit(EXIT_FAILURE);
     }
     // clear out the old logs:
@@ -188,6 +186,6 @@ void props_init_properties()
 */
 void props_deinit_properties(bool saveTheProps)
 {
-    // console
+    consoleLog(LOG_LEVEL_DEBUG, "__deinit__properties", "deinit started, savin' state and clearin' some stuff up.");
     if(saveTheProps) props_null_saveState();
 }

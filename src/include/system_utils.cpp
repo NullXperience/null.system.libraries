@@ -25,14 +25,13 @@
 int executeCommands(const std::vector<std::string>& commandAndArgs, bool requiresOutput)
 {
     pid_t proc = ::fork();
-    // console logs:
     switch(proc)
     {
-        case -1: {
-            // console
+        case FORK_FAILED: {
+            consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to fork a child process.");
             return 1;
         }
-        case 0: {
+        case FORK_SUCCESS: {
             int zeroFile;
             // throw stderr and stdout to /dev/null if that's the fate,
             if(!requiresOutput) zeroFile = open("/dev/null", O_WRONLY);
@@ -46,13 +45,14 @@ int executeCommands(const std::vector<std::string>& commandAndArgs, bool require
             for(auto& s : commandAndArgs) argv.push_back(const_cast<char*>(s.c_str()));
             argv.push_back(nullptr);
             execvp(argv[0], argv.data());
-            // console
+            consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to execute command: {}", argv[0]);
             return 1;
         }
         default: {
-            // console
+            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Waiting for {} to finish it's process.", commandAndArgs[0]);
             int exitStatus;
             wait(&exitStatus);
+            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "This instance returns {} normally", exitStatus);
             return (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1;
         }
     }
@@ -68,14 +68,13 @@ int executeCommands(const std::vector<std::string>& commandAndArgs, bool require
 int executeScripts(const std::vector<std::string>& scriptPathAndArgs, bool requiresOutput)
 {
     pid_t proc = fork();
-    // console logs:
     switch(proc)
     {
-        case -1: {
-            // console
+        case FORK_FAILED: {
+            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to fork process.");
             return 1;
         }
-        case 0: {
+        case FORK_SUCCESS: {
             int zeroFile;
             // throw stderr and stdout to /dev/null if that's the fate,
             if(!requiresOutput) zeroFile = open("/dev/null", O_WRONLY);
@@ -89,13 +88,14 @@ int executeScripts(const std::vector<std::string>& scriptPathAndArgs, bool requi
             for(auto& s : scriptPathAndArgs) argv.push_back(const_cast<char*>(s.c_str()));
             argv.push_back(nullptr);
             execvp(argv[0], argv.data());
-            // console
+            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to execute {}", argv[0]);
             return 1;
         }
         default: {
-            // console
+            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Waiting for script to finish it's process.");
             int exitStatus;
             wait(&exitStatus);
+            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "This instance returns {} normally", exitStatus);
             return (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1;
         }
     }
@@ -117,7 +117,7 @@ int searchBlockListedStrings(std::string filename, std::string search_str)
         if(containsWithLength(line, search_str.c_str(), search_str.length() - 1))
         {
             haystack.close();
-            // got em1
+            consoleLog(LOG_LEVEL_INFO, "searchBlockListedStrings", "Expected string found in given file: {}", filename);
             return 0;
         }
     }
@@ -190,8 +190,12 @@ bool checkBlocklistedStringsNChar(std::string filename)
     };
     for(std::size_t i = 0; i < blocklistedStrings.size() - 1; i++)
     {
-        // console
-        if(searchBlockListedStrings(filename, blocklistedStrings[i]) == 0) return true;
+        if(searchBlockListedStrings(filename, blocklistedStrings[i]) == 0) 
+        {
+            consoleLog(LOG_LEVEL_INFO, "checkBlocklistedStringsNChar", "Found Blocklisted string: {}", blocklistedStrings[i]);
+            consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "The script is not safe to execute! Stopping execution process...");
+            return true;
+        }
     }
     return false;
 }
@@ -231,4 +235,61 @@ std::string getpropFromFile(const std::string& variableName, const std::string& 
         }
     }
     return "";
+}
+
+/* This function returns the elogLevel type as a whole string;
+  *
+  * function: logType
+  * param: enum elogLevel -> type -> enum that contains the log types:
+  *
+*/
+std::string logType(elogLevel type)
+{
+    switch (type)
+    {
+        case LOG_LEVEL_INFO: return "INFO: ";
+        case LOG_LEVEL_WARN: return "WARN: ";
+        case LOG_LEVEL_ERROR: return "ERROR: ";
+        case LOG_LEVEL_DEBUG: return "DEBUG: ";
+        case LOG_LEVEL_ABORT: return "ABORT: ";
+    }
+}
+
+/* This function logs/outputs a string to the log file/console
+  *
+  * function: consoleLog
+  * param: loglevel -> enum elogLevel > log level | service -> a function name 
+  *
+*/
+template <typename... Args>
+void consoleLog(elogLevel type, const std::string& service, const std::string& message, Args&&... extras)
+{
+    if(useStdoutForAllLogs)
+    {
+        if(type == LOG_LEVEL_DEBUG) return;
+        std::cout << logType(type) << service << ": " << std::vformat(message, std::make_format_args(extras...)) << '\n';
+    } 
+    else 
+    {
+        std::fstream cloggg(coreLogFile, std::ios::app);
+        if(!cloggg) return;
+        cloggg << logType(type) << service << ": " << std::vformat(message, std::make_format_args(extras...)) << '\n';
+        cloggg.close();
+    }
+}
+
+void consoleLog(elogLevel type, const std::string& service, const std::string& message)
+{
+    if(useStdoutForAllLogs)
+    {
+        if(type == LOG_LEVEL_DEBUG) return;
+        std::cout << logType(type) << service << ": " << message << '\n';
+    }
+    else 
+    {
+        std::fstream cloggg(coreLogFile, std::ios::app);
+        if(!cloggg) return;
+        cloggg << logType(type) << service << ": " << message << '\n';
+        cloggg.close();
+    }
 }

@@ -27,10 +27,12 @@ std::vector<std::string> propertiesValue_cached;
 const std::string batteryPercentageBlob = "/sys/devices/platform/charger/power_supply/battery/capacity";
 const std::string resetprop = "/system/bin/setprop";
 int main(void){
+    eraseFile(coreLogFile);
     std::cout << system_null_isPackageInstalled(NULL_FRAMEWORK_PACKAGE_NAME) << std::endl;
     std::cout << system_null_getBatteryPercentage() << std::endl;
     std::cout << "start of void" << std::endl;
     std::string messageString = "Hello neighbour!";
     system_null_notifyUser(NOTIFY_NOTIFICATION, messageString);
     system_null_notifyUser(NOTIFY_TOAST, messageString);
+    consoleLog(LOG_LEVEL_INFO, "main", "hello gng");
 }

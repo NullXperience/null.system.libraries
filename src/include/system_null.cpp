@@ -103,7 +103,7 @@ bool system_null_getDeviceState(expectedDeviceState state)
             FILE* fp = popen("dumpsys power | grep 'Display Power'", "r");
             if(!fp)
             {
-                // console
+                consoleLog(LOG_LEVEL_ERROR, "system_null_getDeviceState", "Failed to open stdout to gather information about the device display power status.");
                 return false;
             }
             char buffer[4]{};
@@ -167,7 +167,7 @@ char *system_null_getSystemSettings(systemTable table, const std::string& name, 
     FILE* fptr = popen(command.c_str(), "r");
     if(!fptr)
     {
-        // console
+        consoleLog(LOG_LEVEL_ERROR, "system_null_getSystemSettings", "Failed to get system settings value. Please try again.");
         return nullptr;
     }
     std::string value;
@@ -178,7 +178,7 @@ char *system_null_getSystemSettings(systemTable table, const std::string& name, 
         if(skipNewlinesAtStart && index == 0 && std::strcspn(buffer, "\n") == 0)
         {
             pclose(fptr);
-            // console
+            consoleLog(LOG_LEVEL_ERROR, "system_null_getSystemSettings", "Provided system table variable does not seem to have a value.");
             return nullptr;
         }
         value += buffer;
@@ -202,8 +202,11 @@ char *system_null_getSystemProperty(const std::string& propertyVariableName)
         char sysprop[PROP_VALUE_MAX];
         const std::string command = std::string(resetprop) + " " + propertyVariableName;
         FILE *sysf = popen(command.c_str(), "r");
-        // console 
-        if(!sysf) return nullptr;
+        if(!sysf)
+        {
+            consoleLog(LOG_LEVEL_ERROR, "system_null_getSystemProperty", "uh, major hiccup, failed to open resetprop in popen()");
+            return nullptr;
+        }
         fgets(sysprop, PROP_VALUE_MAX, sysf);
         sysprop[std::strcspn(sysprop, "\n")] = '\0';
         fclose(sysf);
@@ -244,12 +247,10 @@ void system_null_daemonStateManager(setDaemonPropertyState daemonProp, std::stri
     switch(daemonProp)
     {
         case DAEMON_START:
-            // console + if
-            system_null_manageProperty("ctl.start", daemonName, SETPROP);
+            if(system_null_manageProperty("ctl.start", daemonName, SETPROP) == 0) consoleLog(LOG_LEVEL_INFO, "system_null_daemonStateManager", "Daemon {} started successfully.", daemonName);
         break;
         case DAEMON_STOP:
-            //console + if
-            system_null_manageProperty("ctl.stop", daemonName, SETPROP);
+            if(system_null_manageProperty("ctl.stop", daemonName, SETPROP) == 0) consoleLog(LOG_LEVEL_INFO, "system_null_daemonStateManager", "Daemon {} stopped successfully.", daemonName);
         break;
     }
 }
@@ -265,7 +266,7 @@ void androidPropertyCallback(void *cookie, const char* name, const char* value, 
     PropertyHandler* handler = static_cast<PropertyHandler*>(cookie);
     if(handler == NULL) 
     {
-        // console
+        consoleLog(LOG_LEVEL_ERROR, "androidPropertyCallback", "Error: Callback 'cookie' (PropertyHandler pointer) is NULL!");
         return;
     }
     snprintf(handler->propertyName, sizeof(handler->propertyName), "%s", name);
