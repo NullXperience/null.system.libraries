@@ -17,6 +17,7 @@
 #include <system_utils.hpp>
 #include <system_custom_props.hpp>
 #include <system_null.hpp>
+#include <system_plugins.hpp>
 std::size_t propertiesCount = 0;
 bool useStdoutForAllLogs = false;
 bool didAnyPropertyGetChanged = false;
