@@ -28,7 +28,7 @@ extern std::vector<std::string> properties_cached;
 extern std::vector<std::string> propertiesValue_cached;
 
 // macro:
-#define PROPERTY_FILE "/data/adb/nullex/thisProperty"
+#define PROPERTY_FILE "/data/adb/null/thisProperty"
 
 // enum for casting property value.
 enum propertyCastType {

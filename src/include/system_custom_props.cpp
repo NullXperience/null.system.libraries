@@ -24,7 +24,7 @@
   * param: propertyName -> name of the property | propertyValue -> the value of the given property.
   *
 */
-bool props_null_setProperty(std::string propertyName, std::string propertyValue)
+bool props_null_setProperty(std::string propertyName, auto propertyValue)
 {
     // the real reason i didn't put any error on the
     // same value because it's pointless, if you add one
@@ -34,8 +34,14 @@ bool props_null_setProperty(std::string propertyName, std::string propertyValue)
     props_null_readProperty(&setProp);
     if(setProp.found)
     {
+        if(propertyValue == propertiesValue_cached[setProp.propertyIndex])
+        {
+            consoleLog(LOG_LEVEL_INFO, "props_null_setProperty", "property is not updated because it already contains the specified value");
+            return false;
+        }
         propertiesValue_cached[setProp.propertyIndex] = propertyValue;
         didAnyPropertyGetChanged = true;
+        return didAnyPropertyGetChanged;
     }
     return false;
 }
@@ -52,7 +58,7 @@ void props_null_readProperty(void *propInfo)
     romCustProperty* prop_info = static_cast<romCustProperty*>(propInfo);
     if(!prop_info) return;
     prop_info->found = false;
-    // we put this shit in a loop to find the correct index lol
+    // we put this stuff in a loop to find the correct index lol
     for(std::size_t i = 0; i < propertiesCount; i++)
     {
         if(propertiesValue_cached[i].contains("DELETED"))
@@ -65,6 +71,8 @@ void props_null_readProperty(void *propInfo)
             if(prop_info->propertyName.contains("float")) prop_info->typeProp = CAST_TYPE_FLOAT;
             else if(prop_info->propertyName.contains("int")) prop_info->typeProp = CAST_TYPE_INT;
             else if(prop_info->propertyName.contains("bool")) prop_info->typeProp = CAST_TYPE_BOOL;
+            else if(prop_info->propertyName.contains("str")) prop_info->typeProp = CAST_TYPE_STRING;
+            else prop_info->typeProp = CAST_NONE;
             prop_info->found = true;
             switch(prop_info->typeProp)
             {
@@ -153,13 +161,13 @@ void props_null_saveState()
 void props_null_deleteProperty(std::string propertyName)
 {
     // when property deinit get triggered, or else ran, it'll save our
-    // new properties for us. For it to save our new shit, we must have didAnyPropertyGetChanged set to true;
+    // new properties for us. For it to save our new stuff, we must have didAnyPropertyGetChanged set to true;
     props_null_setProperty(propertyName, "DELETED");
     didAnyPropertyGetChanged = true;
 }
 
-/* This function checks if PROPERTY_FILE exists or not, and if it doesn't exist, it closes the shit, otherwise
-   this shit just erases the log file and caches the shit.
+/* This function checks if PROPERTY_FILE exists or not, and if it doesn't exist, it closes the stuff, otherwise
+   this stuff just erases the log file and caches the stuff.
   *
   * function: props_init_properties
   *
@@ -178,7 +186,7 @@ void props_init_properties()
     isEverythingCached = true;
 }
 
-/* This function is used when an unexpected shit had happened.
+/* This function is used when an unexpected stuff had happened.
   *
   * function: props_deinit_properties
   * param: saveTheProps -> saves the current property state if required.
