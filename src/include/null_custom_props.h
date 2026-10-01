@@ -1,0 +1,76 @@
+//
+// Copyright (C) 2026 peachpixels <309287626+makimaa-thr1z@users.noreply.github.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+#ifndef NULL_CUSTOM_PROPS_H
+#define NULL_CUSTOM_PROPS_H
+#include <utility.h>
+
+// variables to use to cache the properties.
+extern int __properties_count;
+extern bool __didAnyPropertyGetChanged;
+extern bool __isEverythingCached;
+extern char *_Nonnull*_Nonnull __properties_cached;
+extern char *_Nonnull*_Nonnull __propertiesValue_cached;
+
+// macro:
+#define PROPERTY_FILE "/data/adb/nullex/thisProperty"
+#define MAX_PROPERTY_NAME_LENGTH 40
+#define MAX_PROPERTY_VALUE_LENGTH 25
+#define MAX_PROPERTIES 1000
+
+// enum for __getProperty().
+enum propertyFetchType {
+    PROPERTY_FROM_CACHE,
+    PROPERTY_FROM_FILE
+};
+
+// enum for casting property value.
+enum propertyCastType {
+    CAST_TYPE_INT,
+    CAST_TYPE_FLOAT,
+    CAST_TYPE_STRING,
+    CAST_TYPE_BOOL,
+    CAST_NONE
+};
+
+// struct that is used for property stuffs like
+// returning it's value or finding the index and type
+typedef struct {
+    int __propertyIndex;
+    bool __found;
+    char *_Nonnull __propertyName;
+    union {
+        int __propertyIntegerValue;
+        float __propertyFloatValue;
+        bool __propertyBoolValue;
+        char *_Nonnull __propertyStringValue;
+    } value; 
+    enum propertyCastType typeProp;
+} romCustProperty;
+
+// functions:
+bool __setProperty(const char *_Nonnull __propertyName, const void *_Nonnull __propertyValue);
+void __readPropertyHelper(void *_Nonnull __cookie, int index);
+void __readProperty(void *_Nonnull __cookie);
+void __cacheProperties();
+void __saveState();
+void __deleteProperty(const char *_Nonnull __propertyName);
+void __init__properties();
+void __deinit__properties(bool saveTheProps);
+void __wipeMetadata(void *_Nonnull __cookie);
+romCustProperty __initializeThisStruct(void);
+romCustProperty __initializeThisStructWithSize(size_t mallocSize);
+#endif
